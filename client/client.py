@@ -3,9 +3,10 @@ import logging
 import sys
 
 import asyncio
+import colorlog
+import messages
 from autobahn.asyncio.websocket import (WebSocketClientFactory,
                                         WebSocketClientProtocol)
-import colorlog
 
 log = logging.getLogger(__name__)
 loop = asyncio.get_event_loop()
@@ -17,19 +18,38 @@ class Connection(WebSocketClientProtocol):
 
     def onOpen(self):
         log.info("connection is open")
-        self.sendClose()
+        self._send(messages.client_info())
+        self._send(messages.player_registration('python-snake'))
 
     def onMessage(self, payload, isBinary):
         assert not isBinary
+        if isBinary:
+            log.error('Received binary message, ignoring...')
+            return
 
-        res = json.loads(payload.decode())
-        log.info("Message received: %s", res)
+        msg = json.loads(payload.decode())
+        log.info("Message received: %s", msg)
+
+        self._route_message(msg)
 
     def onClose(self, wasClean, code, reason):
         log.info("Socket is closed!")
+        if reason:
+            log.error(reason)
 
-        assert not reason
         loop.stop()
+
+    def _send(self, msg):
+        log.debug("Sending message: %s", msg)
+        self.sendMessage(json.dumps(msg).encode(), False)
+
+    def _route_message(self, msg):
+        if msg['type'] == messages.PLAYER_REGISTERED:
+            self._send(messages.start_game())
+        elif msg['type'] == messages.MAP_UPDATE:
+            self._send(messages.register_move('DOWN', msg))
+        elif msg['type'] == messages.GAME_ENDED:
+            self.sendClose()
 
 
 def main():

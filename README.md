@@ -2,7 +2,7 @@
 
 ## TODO:
 - [x] Set up basic project structure
-- [ ] Set up basic communication with server
+- [x] Set up basic communication with server
 - [ ] Implement full-suite of messages
 - [ ] Add utility functions
 - [ ] Add snakebot client class
