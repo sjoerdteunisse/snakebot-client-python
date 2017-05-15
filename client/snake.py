@@ -6,13 +6,13 @@ log = logging.getLogger("client.snake")
 class Snake(object):
     def __init__(self):
         self.name = "snake.py"
+        self.snake_id = None
 
-    def get_next_move(self, map):
+    def get_next_move(self, game_map):
         return 'DOWN'
 
     def on_game_ended(self):
         log.debug('The game has ended!')
-        pass
 
     def on_snake_dead(self, reason):
         log.debug('Our snake died because %s', reason)
@@ -20,8 +20,9 @@ class Snake(object):
     def on_game_starting(self):
         log.debug('Game is starting!')
 
-    def on_player_registered(self):
+    def on_player_registered(self, snake_id):
         log.debug('Player registered successfully')
+        self.snake_id = snake_id
 
     def on_invalid_playername(self):
         log.fatal('Player name is invalid, try another!')

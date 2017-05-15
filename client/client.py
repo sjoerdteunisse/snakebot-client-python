@@ -10,6 +10,7 @@ from autobahn.asyncio.websocket import (WebSocketClientFactory,
 import asyncio
 import messages
 import snake
+import util
 
 log = logging.getLogger("client")
 log_levels = {
@@ -92,7 +93,7 @@ class SnakebotProtocol(WebSocketClientProtocol):
         self.sendClose()
 
     def _map_update(self, msg):
-        move = self.snake.get_next_move(msg)
+        move = self.snake.get_next_move(util.Map(msg['map']))
         self._send(messages.register_move(move, msg))
 
     def _snake_dead(self, msg):
@@ -111,6 +112,8 @@ class SnakebotProtocol(WebSocketClientProtocol):
             self.heart_beat = loop.create_task(
                 self._send_heart_beat(player_id))
             self.heart_beat.add_done_callback(self._done)
+
+        self.snake.on_player_registered(player_id)
 
     def _invalid_player_name(self, msg):
         self.snake.on_invalid_player_name()

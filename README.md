@@ -6,5 +6,5 @@
 - [x] Implement full-suite of messages
 - [x] Fully support tournament mode with heart beat etc
 - [x] Add snakebot client class
-- [ ] Add utility functions
+- [x] Add utility functions
 - [ ] Document how to install and run project (i.e. `pipenv shell` etc)
