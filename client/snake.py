@@ -4,6 +4,9 @@ log = logging.getLogger("client.snake")
 
 
 class Snake(object):
+    def __init__(self):
+        self.name = "snake.py"
+
     def get_next_move(self, map):
         return 'DOWN'
 
@@ -27,8 +30,9 @@ class Snake(object):
         log.info('Game result:')
         for player in player_ranks:
             is_alive = 'alive' if player['alive'] else 'dead'
-            log.info('%d. %d pts\t%s\t(%s)' % (player['rank'], player['points'],
-                     player['playerName'], is_alive))
+            log.info('%d. %d pts\t%s\t(%s)' %
+                     (player['rank'], player['points'], player['playerName'],
+                      is_alive))
 
 
 def get_snake():

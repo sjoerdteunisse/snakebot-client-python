@@ -1,22 +1,34 @@
+import argparse
 import json
 import logging
 import sys
-import time
 
-import asyncio
 import colorlog
-import messages
-import snake
 from autobahn.asyncio.websocket import (WebSocketClientFactory,
                                         WebSocketClientProtocol)
 
+import asyncio
+import messages
+import snake
+
 log = logging.getLogger("client")
+log_levels = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'fatal': logging.FATAL
+}
+log_names = list(log_levels)
+
 loop = asyncio.get_event_loop()
 
 
-class Connection(WebSocketClientProtocol):
+class SnakebotProtocol(WebSocketClientProtocol):
     def __init__(self):
         super(WebSocketClientProtocol, self).__init__()
+
+        self.snake = snake.get_snake()
         self.routing = {
             messages.GAME_ENDED: self._game_ended,
             messages.TOURNAMENT_ENDED: self._tournament_ended,
@@ -29,12 +41,11 @@ class Connection(WebSocketClientProtocol):
             messages.GAME_LINK_EVENT: self._game_link,
             messages.GAME_RESULT_EVENT: self._game_result
         }
-        self.snake = snake.get_snake()
 
     def onOpen(self):
         log.info("connection is open")
         self._send(messages.client_info())
-        self._send(messages.player_registration('python-snake'))
+        self._send(messages.player_registration(self.snake.name))
 
     def onMessage(self, payload, isBinary):
         assert not isBinary
@@ -52,7 +63,10 @@ class Connection(WebSocketClientProtocol):
         if reason:
             log.error(reason)
 
-        self.heart_beat.cancel()
+        if self.is_tournament:
+            self.heart_beat.cancel()
+        else:
+            self._done(None)
 
     def _done(self, task):
         loop.stop()
@@ -70,7 +84,9 @@ class Connection(WebSocketClientProtocol):
 
     def _game_ended(self, msg):
         self.snake.on_game_ended()
-        self.sendClose()
+
+        if not self.is_tournament:
+            self.sendClose()
 
     def _tournament_ended(self, msg):
         self.sendClose()
@@ -87,9 +103,14 @@ class Connection(WebSocketClientProtocol):
 
     def _player_registered(self, msg):
         self._send(messages.start_game())
+
         player_id = msg['receivingPlayerId']
-        self.heart_beat = loop.create_task(self._send_heart_beat(player_id))
-        self.heart_beat.add_done_callback(self._done)
+        self.is_tournament = msg['gameMode'] == 'tournament'
+
+        if self.is_tournament:
+            self.heart_beat = loop.create_task(
+                self._send_heart_beat(player_id))
+            self.heart_beat.add_done_callback(self._done)
 
     def _invalid_player_name(self, msg):
         self.snake.on_invalid_player_name()
@@ -113,30 +134,56 @@ class Connection(WebSocketClientProtocol):
 
 
 def main():
-    host = "localhost"
-    port = "8080"
+    args = _parse_args()
+    _set_up_logging(args)
 
-    factory = WebSocketClientFactory(u"ws://%s:%s/training" % (host, port))
-    factory.protocol = Connection
+    factory = WebSocketClientFactory(u"ws://%s:%s/%s" % (args.host, args.port,
+                                                         args.venue))
+    factory.protocol = SnakebotProtocol
 
-    coro = loop.create_connection(factory, host, port)
+    coro = loop.create_connection(factory, args.host, args.port)
     loop.run_until_complete(coro)
 
     loop.run_forever()
-
     loop.close()
     sys.exit(0)
 
 
-if __name__ == "__main__":
-    handler = colorlog.StreamHandler()
+def _parse_args():
+    parser = argparse.ArgumentParser(
+        description="Python client for Cygni's snakebot competition",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '-r', '--host', default='localhost', help='The host to connect to')
+    parser.add_argument(
+        '-p', '--port', default='8080', help='The port to connect to')
+    parser.add_argument(
+        '-v',
+        '--venue',
+        default='training',
+        choices=['training', 'tournament'],
+        help='The venue (training or tournament)')
+    parser.add_argument(
+        '-l',
+        '--log-level',
+        default=log_names[0],
+        choices=log_names,
+        help='The log level for the client')
 
+    return parser.parse_args()
+
+
+def _set_up_logging(args):
+    handler = colorlog.StreamHandler()
     formatter = colorlog.ColoredFormatter(
-        fmt='%(log_color)s[%(asctime)s %(levelname)8s] -- %(message)s (%(filename)s:%(lineno)s)',
+        fmt=('%(log_color)s[%(asctime)s %(levelname)8s] --'
+             ' %(message)s (%(filename)s:%(lineno)s)'),
         datefmt='%Y-%m-%d %H:%M:%S')
     handler.setFormatter(formatter)
 
     log.addHandler(handler)
-    log.setLevel(logging.DEBUG)
+    log.setLevel(log_levels[args.log_level])
 
+
+if __name__ == "__main__":
     main()
