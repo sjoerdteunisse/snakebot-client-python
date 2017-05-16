@@ -7,7 +7,14 @@
 
 
 ## Running the client
-We use `pipenv` to both manage dependencies and activate the virtualenv.
+You need to have [`pipenv`](pipenv) installed as that is how we manage both
+dependencies and virtualenvs for the project. To install `pipenv`:
+```
+sudo pip install pipenv
+```
+
+Once you have `piipenv` installed you can use it to download all dependencies
+and activate the virtualenv:
 ```
 pipenv shell
 ```
@@ -36,6 +43,6 @@ function.
 ## Connecting to a different host or port
 You can modify the host, port and log level of the client via flags to
 `client.py`, for possible flags and default values see the `--help`:
-````
+```
 python client/client.py --help
 ```
