@@ -87,14 +87,15 @@ class SnakebotProtocol(WebSocketClientProtocol):
         self.snake.on_game_ended()
 
         if not self.is_tournament:
+            log.debug('Sending close message to websocket')
             self.sendClose()
 
     def _tournament_ended(self, msg):
         self.sendClose()
 
     def _map_update(self, msg):
-        move = self.snake.get_next_move(util.Map(msg['map']))
-        self._send(messages.register_move(move, msg))
+        direction = self.snake.get_next_move(util.Map(msg['map']))
+        self._send(messages.register_move(str(direction), msg))
 
     def _snake_dead(self, msg):
         self.snake.on_snake_dead(msg['deathReason'])
@@ -157,9 +158,12 @@ def _parse_args():
         description="Python client for Cygni's snakebot competition",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        '-r', '--host', default='localhost', help='The host to connect to')
+        '-r',
+        '--host',
+        default='snake.cygni.se',
+        help='The host to connect to')
     parser.add_argument(
-        '-p', '--port', default='8080', help='The port to connect to')
+        '-p', '--port', default='80', help='The port to connect to')
     parser.add_argument(
         '-v',
         '--venue',

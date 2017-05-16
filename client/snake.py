@@ -1,4 +1,5 @@
 import logging
+import util
 
 log = logging.getLogger("client.snake")
 
@@ -9,7 +10,7 @@ class Snake(object):
         self.snake_id = None
 
     def get_next_move(self, game_map):
-        return 'DOWN'
+        return util.Direction.DOWN
 
     def on_game_ended(self):
         log.debug('The game has ended!')
