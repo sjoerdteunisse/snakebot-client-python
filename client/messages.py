@@ -30,12 +30,12 @@ def player_registration(snake_name):
 
 def client_info():
     platform_name = platform.system()
-    os_name = "Unknown"
+    os_name = "Maybe Linux"
     os_version = "0.0.0"
 
     if platform_name == "linux" or platform_name == "linux2":
         os_name, os_version, _ = platform.linux_distribution()
-    elif platform_name == "darwin":
+    elif platform_name == "darwin" or platform_name == "Darwin":
         os_name = "macOS"
         os_version, _, _ = platform.mac_ver()
     elif platform_name == "win32":
@@ -44,11 +44,11 @@ def client_info():
 
     return {
         'type': CLIENT_INFO,
-        'langauge': 'Python',
+        'language': 'Python',
         'languageVersion': platform.python_version(),
         'operatingSystem': os_name,
         'operatingSystemVersion': os_version,
-        'clientVersion': 0.1
+        'clientVersion': 1.0
     }
 
 
