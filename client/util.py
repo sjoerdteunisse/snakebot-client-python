@@ -5,7 +5,7 @@ from enum import Enum
 
 def translate_position(position, map_width):
     y = math.floor((position / map_width))
-    x = math.fabs(position - y * map_width)
+    x = math.floor(math.fabs(position - y * map_width))
 
     return (x, y)
 
