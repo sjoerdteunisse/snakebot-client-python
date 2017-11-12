@@ -43,12 +43,12 @@ def get_euclidian_distance(start, goal):
     return math.floor(math.sqrt(x + y))
 
 
-def is_within_square(coord, ne_coord, sw_coord):
+def is_within_square(coord, nw_coord, se_coord):
     x, y = coord
-    ne_x, ne_y = ne_coord
-    sw_x, sw_y = sw_coord
+    nw_x, nw_y = nw_coord
+    se_x, se_y = se_coord
 
-    return x < ne_x or x > sw_x or y < sw_y or y > ne_y
+    return x >= nw_x and x <= se_x and y >= nw_y and y <= se_y
 
 
 class TileType(Enum):
