@@ -25,7 +25,7 @@ class Snake(object):
         log.debug('Player registered successfully')
         self.snake_id = snake_id
 
-    def on_invalid_playername(self):
+    def on_invalid_player_name(self):
         log.fatal('Player name is invalid, try another!')
 
     def on_game_result(self, player_ranks):
