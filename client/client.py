@@ -107,7 +107,7 @@ class SnakebotProtocol(WebSocketClientProtocol):
         self._send(messages.start_game())
 
         player_id = msg['receivingPlayerId']
-        self.is_tournament = msg['gameMode'] == 'tournament'
+        self.is_tournament = msg['gameMode'].upper() == 'TOURNAMENT'
 
         if self.is_tournament:
             self.heart_beat = loop.create_task(
