@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(
-    name='Cygni Python Snakeclient',
+    name='Cygni_Python_Snakeclient',
     version='0.1',
     description="Client for Cygni's snakebot competition",
     author='Martin Barksten',
